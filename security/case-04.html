@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중량물 교육</title>
+
+    <style>
+        * {box-sizing: border-box;}
+
+        body {margin: 0;
+            font-family: Arial, "Noto Sans KR", sans-serif;
+            background-color: #f5f7fa;
+            color: #222;}
+
+        header {background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 22px 40px;}
+
+        header a {text-decoration: none;
+            color: #222;
+            font-size: 22px;
+            font-weight: bold;}
+
+        main {max-width: 850px;
+            margin: 70px auto;
+            padding: 0 20px;}
+
+        h1 {font-size: 32px;
+            margin-bottom: 10px;}
+
+        .description {color: #666;
+            margin-bottom: 40px;}
+
+        .training-table {width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border: 1px solid #ddd;}
+
+        .training-table th,
+        .training-table td {padding: 18px;
+            border-bottom: 1px solid #eee;
+            text-align: center;}
+
+        .training-table th {background-color: #f8f9fa;}
+
+        .training-table td:first-child {text-align: left;}
+
+        .training-table input[type="checkbox"] {width: 20px;
+            height: 20px;
+            cursor: pointer;}
+
+        .training-table input[type="date"] {padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;}
+
+        .status {margin-top: 20px;
+            color: #666;
+            font-size: 14px;}
+
+        .back {display: inline-block;
+            margin-top: 30px;
+            text-decoration: none;
+            color: #555;}
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="../">교육 가이드</a>
+    </header>
+
+    <main>
+        <h1>중량물 교육</h1>
+        <p class="description">교육 이수 여부를 체크하고 이수 날짜를 입력하세요.</p>
+
+        <table class="training-table">
+            <thead>
+                <tr>
+                    <th>직원명</th>
+                    <th>이수 여부</th>
+                    <th>이수 날짜</th>
+                </tr>
+            </thead>
+
+            <tbody id="employee-list"></tbody>
+        </table>
+
+        <p class="status" id="status"></p>
+        <a class="back" href="./">← 보안교육 목록으로 돌아가기</a>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        const SUPABASE_URL = "https://liaeovthyaenwaswdjrv.supabase.co";
+        const SUPABASE_KEY = "API key: sb_publishable_dUjlsA-6jpGuSL40CIlpeA_Pwx1Bw07";
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const TRAINING_NAME = "중량물";
+
+        async function loadTraining() {
+            const status = document.getElementById("status");
+            status.textContent = "불러오는 중...";
+
+            const {data: employees, error: employeeError} = await supabaseClient
+                .from("employees")
+                .select("id, name")
+                .order("id");
+
+            if (employeeError) {
+                status.textContent = "직원 목록을 불러오지 못했습니다.";
+                console.error(employeeError);
+                return;}
+
+            const {data: trainings, error: trainingError} = await supabaseClient
+                .from("trainings")
+                .select("id")
+                .eq("name", TRAINING_NAME)
+                .limit(1);
+
+            if (trainingError || !trainings || trainings.length === 0) {
+                status.textContent = "중량물 교육 정보를 찾을 수 없습니다.";
+                console.error(trainingError);
+                return;}
+
+            const trainingId = trainings[0].id;
+
+            const {data: records, error: recordError} = await supabaseClient
+                .from("training_records")
+                .select("id, employee_id, completed_date")
+                .eq("training_id", trainingId);
+
+            if (recordError) {
+                status.textContent = "교육 기록을 불러오지 못했습니다.";
+                console.error(recordError);
+                return;}
+
+            const tbody = document.getElementById("employee-list");
+            tbody.innerHTML = "";
+
+            employees.forEach(employee => {
+                const record = records.find(item => item.employee_id === employee.id);
+                const tr = document.createElement("tr");
+
+                tr.innerHTML = `
+                    <td>${escapeHtml(employee.name ?? "")}</td>
+                    <td><input type="checkbox" ${record?.completed_date ? "checked" : ""}></td>
+                    <td><input type="date" value="${record?.completed_date ?? ""}"></td>
+                `;
+
+                const checkbox = tr.querySelector('input[type="checkbox"]');
+                const dateInput = tr.querySelector('input[type="date"]');
+
+                checkbox.addEventListener("change", async () => {
+                    if (checkbox.checked && !dateInput.value) {
+                        dateInput.value = new Date().toLocaleDateString("en-CA");}
+
+                    if (!checkbox.checked) {dateInput.value = "";}
+
+                    await saveRecord(employee.id, trainingId, dateInput.value);
+                });
+
+                dateInput.addEventListener("change", async () => {
+                    checkbox.checked = dateInput.value !== "";
+                    await saveRecord(employee.id, trainingId, dateInput.value);
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            status.textContent = "";
+        }
+
+        async function saveRecord(employeeId, trainingId, date) {
+            const status = document.getElementById("status");
+            status.textContent = "저장 중...";
+
+            const {data: existing, error: findError} = await supabaseClient
+                .from("training_records")
+                .select("id")
+                .eq("employee_id", employeeId)
+                .eq("training_id", trainingId)
+                .limit(1);
+
+            if (findError) {
+                status.textContent = "저장 중 오류가 발생했습니다.";
+                console.error(findError);
+                return;}
+
+            let error;
+
+            if (existing && existing.length > 0) {
+                const result = await supabaseClient
+                    .from("training_records")
+                    .update({completed_date: date || null})
+                    .eq("id", existing[0].id);
+
+                error = result.error;
+            } else {
+                const result = await supabaseClient
+                    .from("training_records")
+                    .insert({employee_id: employeeId,
+                        training_id: trainingId,
+                        completed_date: date || null});
+
+                error = result.error;}
+
+            if (error) {
+                status.textContent = "저장에 실패했습니다.";
+                console.error(error);
+            } else {status.textContent = "저장되었습니다.";}
+        }
+
+        function escapeHtml(value) {
+            const div = document.createElement("div");
+            div.textContent = value;
+            return div.innerHTML;}
+
+        loadTraining();
+    </script>
+</body>
+</html>
