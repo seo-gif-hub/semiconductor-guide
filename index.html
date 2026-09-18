@@ -6,116 +6,82 @@
     <title>교육 가이드</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * {box-sizing: border-box;}
 
-        body {
-            margin: 0;
+        body {margin: 0;
             font-family: Arial, "Noto Sans KR", sans-serif;
             background-color: #f5f7fa;
-            color: #222;
-        }
+            color: #222;}
 
-        header {
-            background-color: #ffffff;
+        header {background-color: #ffffff;
             border-bottom: 1px solid #dddddd;
-            padding: 22px 40px;
-        }
+            padding: 22px 40px;}
 
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
+        header h1 {margin: 0;
+            font-size: 24px;}
 
-        main {
-            max-width: 900px;
+        main {max-width: 900px;
             margin: 80px auto;
-            padding: 0 20px;
-        }
+            padding: 0 20px;}
 
-        .title {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        .title {text-align: center;
+            margin-bottom: 50px;}
 
-        .title h2 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
+        .title h2 {font-size: 32px;
+            margin-bottom: 10px;}
 
-        .title p {
-            color: #666;
-        }
+        .title p {color: #666;}
 
-        .menu {
-            display: grid;
+        .menu {display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
+            gap: 25px;}
 
-        .card {
-            display: block;
+        .card {display: block;
             background: white;
             padding: 40px;
             border: 1px solid #dddddd;
             border-radius: 12px;
             text-decoration: none;
             color: #222;
-            transition: 0.2s;
-        }
+            transition: 0.2s;}
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
+        .card:hover {transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);}
 
-        .card h3 {
-            margin-top: 0;
-            font-size: 24px;
-        }
+        .card h3 {margin-top: 0;
+            font-size: 24px;}
 
-        .card p {
-            margin-bottom: 0;
-            color: #666;
-        }
+        .card p {margin-bottom: 0;
+            color: #666;}
 
         @media (max-width: 600px) {
-            .menu {
-                grid-template-columns: 1fr;
-            }
+            .menu {grid-template-columns: 1fr;}
         }
     </style>
 </head>
 
 <body>
+    <header>
+        <h1>교육 가이드</h1>
+    </header>
 
-<header>
-    <h1>교육 가이드</h1>
-</header>
+    <main>
+        <div class="title">
+            <h2>교육 자료</h2>
+            <p>확인할 교육 분야를 선택하세요.</p>
+        </div>
 
-<main>
+        <div class="menu">
+            <a class="card" href="education/">
+                <h3>교육</h3>
+                <p>교육 자료를 확인합니다.</p>
+            </a>
 
-    <div class="title">
-        <h2>교육 자료</h2>
-        <p>확인할 교육 분야를 선택하세요.</p>
-    </div>
-
-    <div class="menu">
-
-        <a class="card" href="education/">
-            <h3>교육</h3>
-            <p>교육 자료를 확인합니다.</p>
-        </a>
-
-        <a class="card" href="security/">
-            <h3>보안교육</h3>
-            <p>보안교육 자료를 확인합니다.</p>
-        </a>
-
-    </div>
-
-</main>
-
+            <a class="card" href="security/">
+                <h3>보안교육</h3>
+                <p>보안교육 자료를 확인합니다.</p>
+            </a>
+        </div>
+    </main>
 </body>
 </html>
